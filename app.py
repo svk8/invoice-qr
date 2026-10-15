@@ -136,8 +136,29 @@ HTML = """
 
         document.getElementById('qrimg').src = 'data:image/png;base64,' + data.qr_base64;
         document.getElementById('payload').textContent = data.payload;
-        document.getElementById('download').href = 'data:application/pdf;base64,' + data.pdf_base64;
-        document.getElementById('download').download = data.filename || 'schet_with_qr.pdf';
+
+        const downloadBtn = document.getElementById('download');
+        const successCard = downloadBtn.closest('.card');
+        if (data.pdf_base64) {
+          downloadBtn.href = 'data:application/pdf;base64,' + data.pdf_base64;
+          downloadBtn.download = data.filename || 'schet_with_qr.pdf';
+          downloadBtn.style.display = 'inline-block';
+          successCard.querySelector('strong').textContent = 'Готово! Счёт с новым QR-кодом подготовлен.';
+          const oldWarn = successCard.querySelector('.docx-warn');
+          if (oldWarn) oldWarn.remove();
+        } else {
+          downloadBtn.style.display = 'none';
+          successCard.querySelector('strong').textContent = 'Реквизиты и QR готовы';
+          let warn = successCard.querySelector('.docx-warn');
+          if (!warn) {
+            warn = document.createElement('p');
+            warn.className = 'docx-warn';
+            warn.style.marginTop = '0.8rem';
+            warn.style.color = '#fbbf24';
+            successCard.appendChild(warn);
+          }
+          warn.textContent = data.warning || 'Для файлов Word (DOCX) автоматическая замена QR внутри документа пока не поддерживается. Используйте QR выше или конвертируйте счёт в PDF.';
+        }
 
         result.style.display = 'block';
       } catch (err) {
